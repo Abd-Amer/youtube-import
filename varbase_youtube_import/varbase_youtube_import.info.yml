@@ -1,0 +1,14 @@
+name: 'Varbase YouTube Import'
+description: 'Feed type that imports from YouTube channels and playlists.'
+type: module
+package: Varbase
+core_version_requirement: ~10
+dependencies:
+  - feeds:feeds
+  - feeds_ex:feeds_ex
+  - feeds_tamper:feeds_tamper
+
+# Information added by Drupal.org packaging script on 2024-04-06
+version: '2.0.1'
+project: 'varbase_youtube_import'
+datestamp: 1712440209
