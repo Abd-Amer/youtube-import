@@ -12,12 +12,15 @@ use Drupal\Core\Entity\EntityInterface;
  * Implements form_alter().
  */
 function varbase_youtube_import_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+  // Customize the form elements for YouTube channel and playlist feeds.
   if ($form_id == 'feeds_feed_youtube_channel_form') {
-    $form['plugin']['fetcher']['source']['#description'] = t('This field should contain a youtube channel link.');
+    // Modify the description and title of the source field for a channel feed.
+    $form['plugin']['fetcher']['source']['#description'] = t('This field should contain a YouTube channel link.');
     $form['plugin']['fetcher']['source']['#title'] = t('YouTube URL');
   }
   elseif ($form_id == 'feeds_feed_youtube_playlist_form') {
-    $form['plugin']['fetcher']['source']['#description'] = t('This field should contain a youtube playlist link.');
+    // Modify the description and title of the source field for a playlist feed.
+    $form['plugin']['fetcher']['source']['#description'] = t('This field should contain a YouTube playlist link.');
     $form['plugin']['fetcher']['source']['#title'] = t('YouTube URL');
   }
 }
@@ -25,27 +28,34 @@ function varbase_youtube_import_form_alter(&$form, FormStateInterface &$form_sta
 /**
  * Implements entity_presave().
  *
- * This function will used to replace the youtube playlist/channel
- * link to their RSS feed link.
+ * This function is used to replace the YouTube playlist/channel
+ * link with their RSS feed link.
  */
 function varbase_youtube_import_entity_presave(EntityInterface $entity) {
+  // Check if the entity is a feed entity.
   if ($entity->getEntityType()->id() == 'feeds_feed') {
+    // Check the type of feed (YouTube channel or playlist).
     if ($entity->get('type')->target_id == 'youtube_channel') {
+      // Replace the channel link with its corresponding RSS feed link.
       if (strpos($entity->get('source')->value, 'googleapis') == FALSE) {
+        // Construct the RSS feed link for the YouTube channel.
         $api = $entity->get('field_api_key')->value;
         $link = $entity->get('source')->value;
         $pos = strpos($link, '/channel/');
         $link_id = substr($link, $pos + 9);
         $feed_link = 'https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&type=video&channelId=' . $link_id . '&maxResults=50&key=' . $api;
+        // Update the source field with the RSS feed link.
         $entity->set('source', $feed_link, TRUE);
       }
       else {
+        // Replace the API key if it's different from the existing one.
         $field_api = $entity->get('field_api_key')->value;
         $link = $entity->get('source')->value;
         $key_pos = strpos($link, '&key=');
         $token_pos = strpos($link, '&pageToken=');
         $old_api = substr($link, $key_pos + 5);
         if ($old_api !== $field_api) {
+          // Update the source field with the new API key.
           if (!(strpos($entity->get('source')->value, 'pageToken'))) {
             $feed_link = substr($entity->get('source')->value, 0, $key_pos);
             $feed_link = $feed_link . '&key=' . $field_api;
@@ -61,21 +71,26 @@ function varbase_youtube_import_entity_presave(EntityInterface $entity) {
       }
     }
     elseif ($entity->get('type')->target_id == 'youtube_playlist') {
+      // Replace the playlist link with its corresponding RSS feed link.
       if (strpos($entity->get('source')->value, 'googleapis') == FALSE) {
+        // Construct the RSS feed link for the YouTube playlist.
         $api = $entity->get('field_api_key')->value;
         $link = $entity->get('source')->value;
         $pos = strpos($link, 'list=');
         $link_id = substr($link, $pos + 5);
         $feed_link = 'https://www.googleapis.com/youtube/v3/playlistItems?order=date&part=snippet&playlistId=' . $link_id . '&maxResults=50&key=' . $api;
+        // Update the source field with the RSS feed link.
         $entity->set('source', $feed_link, TRUE);
       }
       else {
+        // Replace the API key if it's different from the existing one.
         $field_api = $entity->get('field_api_key')->value;
         $link = $entity->get('source')->value;
         $key_pos = strpos($link, '&key=');
         $token_pos = strpos($link, '&pageToken=');
         $old_api = substr($link, $key_pos + 5);
         if ($old_api !== $field_api) {
+          // Update the source field with the new API key.
           if (!(strpos($entity->get('source')->value, 'pageToken'))) {
             $feed_link = substr($entity->get('source')->value, 0, $key_pos);
             $feed_link = $feed_link . '&key=' . $field_api;
